@@ -4,17 +4,20 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "bun run index.ts",
-    "dev": "bun run --watch index.ts"
+    "start": "bun run src/app.ts",
+    "dev": "bun run --watch src/app.ts"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "jose": "^6.1.0",
-    "mongodb": "^6.19.0"
+    "mongodb": "^6.19.0",
+    "mongoose": "^8.18.2"
   }
 }
