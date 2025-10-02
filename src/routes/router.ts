@@ -12,6 +12,7 @@ interface Route {
 
 export class Router {
   private routes: Route[] = []
+  private middlewares: ((req: Request) => Promise<Response>)[] = []
 
   on(method: string, pattern: string, handler: Handler) {
     this.routes.push({ method, pattern, handler })

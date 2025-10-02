@@ -11,10 +11,17 @@ export const login = async (req: Request) => {
   const result = await userService.authenticateUser(body.email, body.password)
 
   if (!result.success) {
-    return Response.json({ error: result.error }, { status: 404 })
+    switch (result.error) {
+      case userService.AuthError.InvalidCredentials:
+        return Response.json({ error: result.error }, { status: 401 })
+      case userService.AuthError.UserBanned:
+        return Response.json({ error: result.error }, { status: 403 })
+      case userService.AuthError.UserNotFound:
+        return Response.json({ error: result.error }, { status: 404 })
+      default:
+        return Response.json({ error: result.error }, { status: 500 })
+    }
   }
-
-  console.log('Login successful:')
 
   return Response.json(
     {
@@ -53,7 +60,14 @@ export const register = async (req: Request) => {
   )
 
   if (!result.success) {
-    return Response.json({ error: result.error }, { status: 404 })
+    switch (result.error) {
+      case userService.AuthError.UserCreationFailed:
+        return Response.json({ error: result.error }, { status: 400 })
+      case userService.AuthError.UserAlreadyExists:
+        return Response.json({ error: result.error }, { status: 409 })
+      default:
+        return Response.json({ error: result.error }, { status: 500 })
+    }
   }
 
   return Response.json(
