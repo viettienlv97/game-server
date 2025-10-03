@@ -7,6 +7,7 @@ await connectMongo()
 
 Bun.serve({
   port,
+  hostname: '0.0.0.0', // Bind to all network interfaces
   async fetch(req) {
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {

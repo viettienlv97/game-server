@@ -1,5 +1,6 @@
 import { Router } from './router'
 import * as userCtrl from '../controllers/user'
+import * as walletCtrl from '../controllers/wallet'
 import { mongoHealth } from '../libs/db'
 import { cors } from '../middlewares/cors'
 
@@ -27,3 +28,15 @@ router.on('POST', '/api/register', userCtrl.register)
 // router.on('POST', '/api/signin', userCtrl.signIn)
 // router.on('POST', '/api/refresh', userCtrl.refreshToken)
 // router.on('POST', '/api/logout', userCtrl.signOut)
+
+// Wallet - Client endpoints
+router.on('GET', '/api/wallet', walletCtrl.getUserWallet)
+router.on('GET', '/api/wallet/transactions', walletCtrl.getUserTransactions)
+router.on('POST', '/api/wallet/deposit', walletCtrl.createDepositRequest)
+router.on('POST', '/api/wallet/withdraw', walletCtrl.createWithdrawalRequest)
+router.on('GET', '/api/wallet/requests', walletCtrl.getUserRequests)
+
+// Wallet - Admin endpoints
+router.on('GET', '/api/admin/transactions', walletCtrl.getAllTransactions)
+router.on('PUT', '/api/admin/transactions/:id', walletCtrl.processTransaction)
+router.on('GET', '/api/admin/wallet/stats', walletCtrl.getWalletStats)
