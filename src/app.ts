@@ -3,9 +3,9 @@ import { connectMongo } from './libs/db'
 import { cors } from './middlewares/cors'
 
 const port = Number(Bun.env.PORT ?? 9000)
-await connectMongo()
 
-Bun.serve({
+// Start server immediately for health checks
+const server = Bun.serve({
   port,
   hostname: '0.0.0.0', // Bind to all network interfaces
   async fetch(req) {
@@ -48,6 +48,13 @@ Bun.serve({
   }
 })
 
-console.log(`Server is running on http://localhost:${port}`)
+console.log(`Server is running on http://0.0.0.0:${port}`)
+
+// Connect to database asynchronously
+connectMongo().then(() => {
+  console.log('Database connected successfully')
+}).catch((error) => {
+  console.error('Database connection failed:', error)
+})
 
 // to do

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import { Router } from './router'
 import * as userCtrl from '../controllers/user'
 import * as walletCtrl from '../controllers/wallet'
@@ -6,11 +7,22 @@ import { cors } from '../middlewares/cors'
 
 export const router = new Router()
 
+// Root health check for deployment platforms
+router.on('GET', '/', () => new Response('OK', { status: 200 }))
+
 router.on('GET', '/api', () => Response.json({ message: 'API root' }))
 
 // Health check
 router.on('GET', '/api/health', async () => {
   try {
+    // Check if database is connected
+    if (mongoose.connection.readyState !== 1) {
+      return Response.json(
+        { status: 'connecting', message: 'Database connection in progress' },
+        { status: 503 }
+      )
+    }
+
     const mongo = await mongoHealth()
     const status = mongo.ok ? 200 : 500
     return Response.json({ status: 'ok', mongo }, { status })
