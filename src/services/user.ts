@@ -28,7 +28,14 @@ export enum AuthError {
   InternalError = 'Internal server error'
 }
 
-export const authenticateUser = async (email: string, password: string) => {
+export const authenticateUser = async (
+  email: string, 
+  password: string,
+  sessionInfo?: {
+    userAgent?: string
+    ipAddress?: string
+  }
+) => {
   try {
     const user = await repo.getUserByEmail(email)
     if (!user) {
@@ -42,14 +49,35 @@ export const authenticateUser = async (email: string, password: string) => {
       return { success: false, error: AuthError.UserBanned }
     }
 
-    const tokenId = Bun.randomUUIDv7()
-    const accessToken = await signAccess(user._id.toString(), user.role)
-    const refreshToken = await signRefresh(user._id.toString(), tokenId)
+    // Generate new session identifiers
+    const sessionId = Bun.randomUUIDv7()
+    const refreshTokenId = Bun.randomUUIDv7()
+    
+    // Create tokens
+    const accessToken = await signAccess(user._id.toString(), user.role, sessionId)
+    const refreshToken = await signRefresh(user._id.toString(), refreshTokenId)
+
+    // Update user with new active session (this terminates any existing session)
+    await repo.updateUser(user._id.toString(), {
+      activeSession: {
+        sessionId,
+        refreshTokenId,
+        loginAt: new Date(),
+        userAgent: sessionInfo?.userAgent || 'Unknown',
+        ipAddress: sessionInfo?.ipAddress || 'Unknown'
+      }
+    })
 
     return {
       success: true,
       accessToken,
-      refreshToken
+      refreshToken,
+      sessionInfo: {
+        sessionId,
+        loginAt: new Date(),
+        userAgent: sessionInfo?.userAgent || 'Unknown',
+        ipAddress: sessionInfo?.ipAddress || 'Unknown'
+      }
     }
   } catch (error) {
     console.error('Error during authentication:', error)
@@ -117,4 +145,48 @@ export const updateUserProfile = async (
 
   const updatedUser = await repo.updateUser(userId, { profile })
   return updatedUser
+}
+
+// Single session support functions
+export const validateUserSession = async (userId: string, sessionId: string): Promise<boolean> => {
+  try {
+    const user = await repo.getUserById(userId)
+    if (!user || !user.activeSession) {
+      return false
+    }
+
+    // Check if the session ID matches the active session
+    return user.activeSession.sessionId === sessionId
+  } catch (error) {
+    console.error('Error validating user session:', error)
+    return false
+  }
+}
+
+export const terminateUserSession = async (userId: string): Promise<boolean> => {
+  try {
+    await repo.updateUser(userId, {
+      activeSession: {
+        sessionId: null,
+        refreshTokenId: null,
+        loginAt: null,
+        userAgent: null,
+        ipAddress: null
+      }
+    })
+    return true
+  } catch (error) {
+    console.error('Error terminating user session:', error)
+    return false
+  }
+}
+
+export const getUserActiveSession = async (userId: string) => {
+  try {
+    const user = await repo.getUserById(userId)
+    return user?.activeSession || null
+  } catch (error) {
+    console.error('Error getting user active session:', error)
+    return null
+  }
 }

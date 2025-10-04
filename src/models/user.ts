@@ -12,6 +12,14 @@ const userSchema = new Schema(
       firstName: { type: String, required: false },
       lastName: { type: String, required: false },
       dateOfBirth: { type: Date, required: false }
+    },
+    // Single session support
+    activeSession: {
+      sessionId: { type: String, required: false },
+      refreshTokenId: { type: String, required: false },
+      loginAt: { type: Date, required: false },
+      userAgent: { type: String, required: false },
+      ipAddress: { type: String, required: false }
     }
   },
   { timestamps: true }

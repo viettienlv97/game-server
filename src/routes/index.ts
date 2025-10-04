@@ -27,7 +27,7 @@ router.on('POST', '/api/login', userCtrl.login)
 router.on('POST', '/api/register', userCtrl.register)
 // router.on('POST', '/api/signin', userCtrl.signIn)
 // router.on('POST', '/api/refresh', userCtrl.refreshToken)
-// router.on('POST', '/api/logout', userCtrl.signOut)
+router.on('POST', '/api/logout', userCtrl.logout)
 
 // Wallet - Client endpoints
 router.on('GET', '/api/wallet', walletCtrl.getUserWallet)

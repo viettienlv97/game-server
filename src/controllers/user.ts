@@ -1,4 +1,5 @@
 import * as userService from '../services/user'
+import { requireAuth } from '../middlewares/auth'
 
 export const login = async (req: Request) => {
   const body = (await req.json()) as { email?: string; password?: string }
@@ -8,7 +9,20 @@ export const login = async (req: Request) => {
       { status: 400 }
     )
 
-  const result = await userService.authenticateUser(body.email, body.password)
+  // Extract session information from request
+  const userAgent = req.headers.get('user-agent') || 'Unknown'
+  const ipAddress = req.headers.get('x-forwarded-for') || 
+                   req.headers.get('x-real-ip') || 
+                   'Unknown'
+
+  const result = await userService.authenticateUser(
+    body.email, 
+    body.password,
+    {
+      userAgent,
+      ipAddress
+    }
+  )
 
   if (!result.success) {
     switch (result.error) {
@@ -27,7 +41,8 @@ export const login = async (req: Request) => {
     {
       message: 'Login successful',
       accessToken: result.accessToken,
-      refreshToken: result.refreshToken
+      refreshToken: result.refreshToken,
+      session: result.sessionInfo
     },
     { status: 200 }
   )
@@ -75,5 +90,32 @@ export const register = async (req: Request) => {
       message: 'Registration successful'
     },
     { status: 201 }
+  )
+}
+
+export const logout = async (req: Request) => {
+  // Authenticate user first
+  const authResult = await requireAuth(req)
+  if (!authResult.ok) {
+    return Response.json(
+      { error: authResult.message },
+      { status: authResult.status }
+    )
+  }
+
+  // Terminate user session
+  const success = await userService.terminateUserSession(authResult.claims!.sub)
+  if (!success) {
+    return Response.json(
+      { error: 'Failed to logout' },
+      { status: 500 }
+    )
+  }
+
+  return Response.json(
+    {
+      message: 'Logout successful'
+    },
+    { status: 200 }
   )
 }

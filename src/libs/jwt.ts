@@ -4,6 +4,7 @@ import { getEnvVar } from '../utils'
 type AccessTokenPayload = {
   role: string // 'player' | 'admin'
   sub: string // user id
+  sessionId?: string // session id for single session support
 }
 
 type RefreshTokenPayload = {
@@ -21,10 +22,16 @@ const REFRESH_TTL = getEnvVar('REFRESH_TTL')
  * Sign an access token for a user
  * @param sub - User ID
  * @param role - User role
+ * @param sessionId - Optional session ID for single session support
  * @returns Signed JWT access token
  */
-export const signAccess = async (sub: string, role: string) => {
-  return await new SignJWT({ role, sub })
+export const signAccess = async (sub: string, role: string, sessionId?: string) => {
+  const payload: AccessTokenPayload = { role, sub }
+  if (sessionId) {
+    payload.sessionId = sessionId
+  }
+  
+  return await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
     .setIssuedAt()
     .setExpirationTime(TOKEN_TTL)
