@@ -25,6 +25,7 @@ router.on('GET', '/api/health', async () => {
 // Auth
 router.on('POST', '/api/login', userCtrl.login)
 router.on('POST', '/api/register', userCtrl.register)
+router.on('GET', '/api/me', userCtrl.getMe)
 // router.on('POST', '/api/signin', userCtrl.signIn)
 // router.on('POST', '/api/refresh', userCtrl.refreshToken)
 router.on('POST', '/api/logout', userCtrl.logout)
@@ -37,6 +38,6 @@ router.on('POST', '/api/wallet/withdraw', walletCtrl.createWithdrawalRequest)
 router.on('GET', '/api/wallet/requests', walletCtrl.getUserRequests)
 
 // Wallet - Admin endpoints
-router.on('GET', '/api/admin/transactions', walletCtrl.getAllTransactions)
-router.on('PUT', '/api/admin/transactions/:id', walletCtrl.processTransaction)
+router.on('GET', '/api/admin/wallet/transactions', walletCtrl.getAllTransactions)
+router.on('POST', '/api/admin/wallet/transactions/:id/process', walletCtrl.processTransaction)
 router.on('GET', '/api/admin/wallet/stats', walletCtrl.getWalletStats)

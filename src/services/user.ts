@@ -190,3 +190,12 @@ export const getUserActiveSession = async (userId: string) => {
     return null
   }
 }
+
+export const getUserById = async (userId: string) => {
+  try {
+    return await repo.getUserById(userId)
+  } catch (error) {
+    console.error('Error getting user by ID:', error)
+    return null
+  }
+}

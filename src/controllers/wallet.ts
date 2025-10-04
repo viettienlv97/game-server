@@ -155,8 +155,8 @@ export const getAllTransactions = async (req: Request) => {
   }
 }
 
-// PUT /api/admin/transactions/:id - Approve/reject transaction
-export const processTransaction = async (req: Request) => {
+// POST /api/admin/wallet/transactions/:id/process - Approve/reject transaction
+export const processTransaction = async (req: Request, params: Record<string, string>) => {
   try {
     const auth = await requireAuth(req)
     if (!auth.ok) {
@@ -169,10 +169,8 @@ export const processTransaction = async (req: Request) => {
     }
 
     const adminId = auth.claims!.sub
-    const url = new URL(req.url)
-    const pathParts = url.pathname.split('/')
-    const id = pathParts[pathParts.length - 1] // Get transaction ID from URL
-    
+    const id = params.id
+
     if (!id) {
       return Response.json({ error: 'Transaction ID is required' }, { status: 400 })
     }

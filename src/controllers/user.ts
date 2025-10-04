@@ -119,3 +119,26 @@ export const logout = async (req: Request) => {
     { status: 200 }
   )
 }
+
+export const getMe = async (req: Request) => {
+  // Authenticate user first
+  const authResult = await requireAuth(req)
+  if (!authResult.ok) {
+    return Response.json(
+      { error: authResult.message },
+      { status: authResult.status }
+    )
+  }
+
+  // Get user profile
+  const user = await userService.getUserById(authResult.claims!.sub)
+  if (!user) {
+    return Response.json(
+      { error: 'User not found' },
+      { status: 404 }
+    )
+  }
+
+  // Return user profile (passwordHash is already excluded by repository)
+  return Response.json(user, { status: 200 })
+}
