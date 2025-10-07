@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import { Router } from './router'
 import * as userCtrl from '../controllers/user'
 import * as walletCtrl from '../controllers/wallet'
+import * as pokerCtrl from '../controllers/poker'
 import { mongoHealth } from '../libs/db'
 import { cors } from '../middlewares/cors'
 
@@ -53,3 +54,13 @@ router.on('GET', '/api/wallet/requests', walletCtrl.getUserRequests)
 router.on('GET', '/api/admin/wallet/transactions', walletCtrl.getAllTransactions)
 router.on('POST', '/api/admin/wallet/transactions/:id/process', walletCtrl.processTransaction)
 router.on('GET', '/api/admin/wallet/stats', walletCtrl.getWalletStats)
+
+// Poker endpoints
+router.on('POST', '/api/poker/tables', pokerCtrl.createTable)
+router.on('GET', '/api/poker/tables', pokerCtrl.getTables)
+router.on('GET', '/api/poker/tables/:tableId', pokerCtrl.getTable)
+router.on('POST', '/api/poker/join', pokerCtrl.joinTable)
+router.on('POST', '/api/poker/leave', pokerCtrl.leaveTable)
+router.on('POST', '/api/poker/action', pokerCtrl.performAction)
+router.on('GET', '/api/poker/games', pokerCtrl.getPlayerGames)
+router.on('GET', '/api/poker/games/:gameId', pokerCtrl.getGameState)

@@ -1,14 +1,26 @@
+import type { ServerWebSocket } from 'bun'
 import { router } from './routes'
 import { connectMongo } from './libs/db'
 import { cors } from './middlewares/cors'
+import { WebSocketManager } from './websocket'
 
 const port = Number(Bun.env.PORT ?? 9000)
 
-// Start server immediately for health checks
-const server = Bun.serve({
+// Initialize WebSocket manager
+const wsManager = new WebSocketManager()
+
+// Create HTTP server with WebSocket support
+const httpServer = Bun.serve({
   port,
   hostname: '0.0.0.0', // Bind to all network interfaces
-  async fetch(req) {
+  async fetch(req, server) {
+    // Handle WebSocket upgrade
+    if (req.headers.get('upgrade') === 'websocket') {
+      const success = server.upgrade(req)
+      if (success) return
+      return new Response('WebSocket upgrade failed', { status: 400 })
+    }
+
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
       const corsResponse = cors(req)
@@ -45,6 +57,27 @@ const server = Bun.serve({
         headers
       }
     )
+  },
+  websocket: {
+    message(ws: ServerWebSocket, message) {
+      wsManager.handleMessage(ws, message)
+    },
+    open(ws: ServerWebSocket) {
+      wsManager.handleConnection(ws)
+    },
+    close(ws: ServerWebSocket) {
+      wsManager.handleDisconnect(ws)
+    },
+    ping(ws: ServerWebSocket) {
+      // Handle ping - mark client as alive
+      const client = wsManager['clients'].get(ws)
+      if (client) client.isAlive = true
+    },
+    pong(ws: ServerWebSocket) {
+      // Handle pong - mark client as alive
+      const client = wsManager['clients'].get(ws)
+      if (client) client.isAlive = true
+    }
   }
 })
 
