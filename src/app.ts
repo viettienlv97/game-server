@@ -3,6 +3,7 @@ import { router } from './routes'
 import { connectMongo } from './libs/db'
 import { cors } from './middlewares/cors'
 import { WebSocketManager } from './websocket'
+import os from 'os'
 
 const port = Number(Bun.env.PORT ?? 9000)
 
@@ -82,12 +83,26 @@ const httpServer = Bun.serve({
 })
 
 console.log(`Server is running on http://0.0.0.0:${port}`)
+// I want to show current host of device not just 0.0.0.0
+
+if (Bun.env.IS_DEV === 'true') {
+  const interfaces = os.networkInterfaces()
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]!) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        console.log(`Accessible at http://${iface.address}:${port}`)
+      }
+    }
+  }
+}
 
 // Connect to database asynchronously
-connectMongo().then(() => {
-  console.log('Database connected successfully')
-}).catch((error) => {
-  console.error('Database connection failed:', error)
-})
+connectMongo()
+  .then(() => {
+    console.log('Database connected successfully')
+  })
+  .catch((error) => {
+    console.error('Database connection failed:', error)
+  })
 
 // to do

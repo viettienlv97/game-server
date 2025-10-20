@@ -8,5 +8,6 @@ declare module 'bun' {
     REFRESH_TTL: string;
     MONGO_MIN_POOL: number;
     MONGO_MAX_POOL: number;
+    IS_DEV: 'true' | 'false';
   }
 }
